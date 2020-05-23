@@ -1,10 +1,14 @@
 package com.shinmiy.cameraxfullscreen
 
+import android.Manifest
 import android.os.Bundle
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import com.shinmiy.cameraxfullscreen.databinding.ActivityFullscreenBinding
+import permissions.dispatcher.NeedsPermission
+import permissions.dispatcher.RuntimePermissions
 
+@RuntimePermissions
 class FullscreenActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityFullscreenBinding
@@ -14,6 +18,8 @@ class FullscreenActivity : AppCompatActivity() {
         binding = ActivityFullscreenBinding.inflate(layoutInflater)
         setContentView(binding.root)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
+
+        startCameraWithPermissionCheck()
     }
 
     override fun onResume() {
@@ -33,5 +39,10 @@ class FullscreenActivity : AppCompatActivity() {
                     View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY or
                     View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION or
                     View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+    }
+
+    @NeedsPermission(Manifest.permission.CAMERA)
+    fun startCamera() {
+        // TODO
     }
 }
