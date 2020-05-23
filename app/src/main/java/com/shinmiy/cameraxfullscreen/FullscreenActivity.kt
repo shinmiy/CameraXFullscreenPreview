@@ -2,8 +2,14 @@ package com.shinmiy.cameraxfullscreen
 
 import android.Manifest
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
+import androidx.camera.core.Camera
+import androidx.camera.core.CameraSelector
+import androidx.camera.core.Preview
+import androidx.camera.lifecycle.ProcessCameraProvider
+import androidx.core.content.ContextCompat
 import com.shinmiy.cameraxfullscreen.databinding.ActivityFullscreenBinding
 import permissions.dispatcher.NeedsPermission
 import permissions.dispatcher.RuntimePermissions
@@ -11,7 +17,14 @@ import permissions.dispatcher.RuntimePermissions
 @RuntimePermissions
 class FullscreenActivity : AppCompatActivity() {
 
+    companion object {
+        private const val TAG = "CameraXBasic"
+    }
+
     private lateinit var binding: ActivityFullscreenBinding
+
+    private var preview: Preview? = null
+    private var camera: Camera? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -43,6 +56,33 @@ class FullscreenActivity : AppCompatActivity() {
 
     @NeedsPermission(Manifest.permission.CAMERA)
     fun startCamera() {
-        // TODO
+        val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
+
+        cameraProviderFuture.addListener(Runnable {
+            // Used to bind the lifecycle of cameras to the lifecycle owner
+            val cameraProvider = cameraProviderFuture.get()
+
+            // Preview
+            preview = Preview.Builder().build()
+
+            // Select back camera
+            val cameraSelector = CameraSelector.Builder()
+                .requireLensFacing(CameraSelector.LENS_FACING_BACK)
+                .build()
+
+            try {
+                // Unbind use cases before rebinding
+                cameraProvider.unbindAll()
+
+                // Bind use cases to camera
+                camera = cameraProvider.bindToLifecycle(
+                    this, cameraSelector, preview
+                )
+                preview?.setSurfaceProvider(binding.fullscreenContent.createSurfaceProvider(camera?.cameraInfo))
+            } catch (exc: Exception) {
+                Log.e(TAG, "Use case binding failed", exc)
+            }
+
+        }, ContextCompat.getMainExecutor(this))
     }
 }
