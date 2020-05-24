@@ -2,7 +2,6 @@ package com.shinmiy.cameraxfullscreen
 
 import android.Manifest
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import android.view.WindowManager
 import androidx.appcompat.app.AppCompatActivity
@@ -10,22 +9,20 @@ import androidx.camera.core.Camera
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
-import androidx.core.content.ContextCompat
+import androidx.lifecycle.lifecycleScope
 import com.shinmiy.cameraxfullscreen.databinding.ActivityFullscreenBinding
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import permissions.dispatcher.NeedsPermission
 import permissions.dispatcher.RuntimePermissions
 
 @RuntimePermissions
 class FullscreenActivity : AppCompatActivity() {
-
-    companion object {
-        private const val TAG = "CameraXBasic"
-    }
-
     private lateinit var binding: ActivityFullscreenBinding
 
-    private var preview: Preview? = null
-    private var camera: Camera? = null
+    private lateinit var preview: Preview
+    private lateinit var camera: Camera
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -70,33 +67,33 @@ class FullscreenActivity : AppCompatActivity() {
 
     @NeedsPermission(Manifest.permission.CAMERA)
     fun startCamera() {
-        val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
-
-        cameraProviderFuture.addListener(Runnable {
-            // Used to bind the lifecycle of cameras to the lifecycle owner
-            val cameraProvider = cameraProviderFuture.get()
+        lifecycleScope.launch(Dispatchers.Main) {
+            val cameraProvider = getCameraProvider()
 
             // Preview
             preview = Preview.Builder().build()
 
-            // Select back camera
-            val cameraSelector = CameraSelector.Builder()
-                .requireLensFacing(CameraSelector.LENS_FACING_BACK)
-                .build()
+            // Unbind use cases before rebinding
+            cameraProvider.unbindAll()
 
-            try {
-                // Unbind use cases before rebinding
-                cameraProvider.unbindAll()
-
-                // Bind use cases to camera
-                camera = cameraProvider.bindToLifecycle(
-                    this, cameraSelector, preview
-                )
-                preview?.setSurfaceProvider(binding.fullscreenContent.createSurfaceProvider(camera?.cameraInfo))
-            } catch (exc: Exception) {
-                Log.e(TAG, "Use case binding failed", exc)
-            }
-
-        }, ContextCompat.getMainExecutor(this))
+            // Bind use cases to camera
+            camera = cameraProvider.bindToLifecycle(
+                this@FullscreenActivity,
+                backCamera,
+                preview
+            )
+            camera.cameraInfo
+                .let(binding.fullscreenContent::createSurfaceProvider)
+                .let(preview::setSurfaceProvider)
+        }
     }
+
+    private suspend fun getCameraProvider() = withContext(Dispatchers.IO) {
+        ProcessCameraProvider.getInstance(this@FullscreenActivity).get()
+    }
+
+    private val backCamera
+        get() = CameraSelector.Builder()
+            .requireLensFacing(CameraSelector.LENS_FACING_BACK)
+            .build()
 }
