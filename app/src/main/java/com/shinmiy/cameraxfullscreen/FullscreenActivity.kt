@@ -45,6 +45,15 @@ class FullscreenActivity : AppCompatActivity() {
         hide()
     }
 
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        onRequestPermissionsResult(requestCode, grantResults)
+    }
+
     private fun hide() {
         supportActionBar?.hide()
         // Note that some of these constants are new as of API 16 (Jelly Bean)
