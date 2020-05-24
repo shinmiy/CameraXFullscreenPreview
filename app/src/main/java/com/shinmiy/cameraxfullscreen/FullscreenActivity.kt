@@ -88,6 +88,7 @@ class FullscreenActivity : AppCompatActivity() {
         }
     }
 
+    @Suppress("BlockingMethodInNonBlockingContext")
     private suspend fun getCameraProvider() = withContext(Dispatchers.IO) {
         ProcessCameraProvider.getInstance(this@FullscreenActivity).get()
     }
