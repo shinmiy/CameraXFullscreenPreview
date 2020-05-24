@@ -34,6 +34,12 @@ class FullscreenActivity : AppCompatActivity() {
         // https://developer.android.com/training/scheduling/wakelock.html
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
 
+        // Dim screen
+        val attributes = window.attributes.also {
+            it.screenBrightness = Float.MIN_VALUE
+        }
+        window.attributes = attributes
+
         startCameraWithPermissionCheck()
     }
 
