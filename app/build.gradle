@@ -57,4 +57,11 @@ dependencies {
 
     implementation 'org.permissionsdispatcher:permissionsdispatcher:4.7.0'
     kapt 'org.permissionsdispatcher:permissionsdispatcher-processor:4.7.0'
+
+    // Koin
+    implementation "org.koin:koin-core:$koin_version"
+    implementation "org.koin:koin-android:$koin_version"
+    implementation "org.koin:koin-androidx-scope:$koin_version"
+    implementation "org.koin:koin-androidx-viewmodel:$koin_version"
+    implementation "org.koin:koin-androidx-ext:$koin_version"
 }
