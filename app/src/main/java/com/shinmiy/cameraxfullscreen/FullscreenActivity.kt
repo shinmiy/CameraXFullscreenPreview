@@ -88,8 +88,8 @@ class FullscreenActivity : AppCompatActivity() {
                 backCamera,
                 preview
             )
-            camera.cameraInfo
-                .let(binding.fullscreenContent::createSurfaceProvider)
+
+            binding.fullscreenContent.createSurfaceProvider()
                 .let(preview::setSurfaceProvider)
         }
     }
